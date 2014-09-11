@@ -51,6 +51,8 @@ $ docker run --rm -v /var/run/docker.sock:/var/run/docker.sock binocarlos/ambass
 
 The output from running the 3 benchmarks on a vagrant:
 
+This is running with ab settings of `-n 200 -c 20`
+
 ```
 direct:
 
