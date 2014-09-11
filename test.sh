@@ -17,9 +17,13 @@ cmd-webserver(){
 }
 
 cmd-start(){
+	local nginxconf="$1"; shift
+	local haproxyconf="$1"; shift
 	$(docker run --rm -e EXPECT=1 progrium/consul cmd:run $IP -d)
 	docker run -d -v /var/run/docker.sock:/var/run/docker.sock --name backends progrium/ambassadord --omnimode
 	docker run --rm --privileged --net container:backends progrium/ambassadord --setup-iptables
+	docker run -d -p 8080 --name nginx -v $nginxconf:/etc/nginx.conf:ro nginx
+	docker run -d -p 8080 --name haproxy -v $haproxyconf:/haproxy-override dockerfile/haproxy
 	sleep 1
 	cmd-webserver web1 8081
 	cmd-webserver web2 8082
@@ -27,6 +31,7 @@ cmd-start(){
 }
 
 cmd-stop(){
+	docker stop nginx && docker rm nginx
 	docker stop backends && docker rm backends
 	docker stop consul && docker rm consul
 	docker stop web1 && docker rm web1
@@ -39,6 +44,8 @@ cmd-benchmark() {
 	local backend="web.service.consul"
 	local address="http://backends:8080/"
 	local abargs="$@"
+	local link="backends:backends"
+
 
 	if [[ -z $abargs ]]; then
 		abargs="-n 200 -c 20"
@@ -48,6 +55,10 @@ cmd-benchmark() {
 		backend="consul://$IP:8500/web"
 	elif [[ "$mode" == "direct" ]]; then
 		address="http://$IP:8081/"
+	elif [[ "$mode" == "nginx" ]]; then
+		link="nginx:backends"
+	elif [[ "$mode" == "haproxy" ]]; then
+		link="haproxy:backends"
 	fi
 
 	echo
@@ -57,7 +68,70 @@ cmd-benchmark() {
 	echo
 	echo "--------------------------------------"
 	echo
-	docker run -ti --rm --link backends:backends -e "BACKEND_8080=$backend" --entrypoint="/usr/bin/ab" binocarlos/ambassadord-speedtest $abargs $address
+	docker run -ti --rm --link $link -e "BACKEND_8080=$backend" --entrypoint="/usr/bin/ab" binocarlos/ambassadord-speedtest $abargs $address
+}
+
+cmd-haproxyconfig(){
+	cat <<EOF
+global  
+   maxconn 4096  
+   user haproxy  
+   group haproxy
+  
+defaults  
+   log   global  
+   mode   http  
+   # logs which servers requests go to, plus current connections and a whole lot of other stuff   
+   option   httplog  
+   option   dontlognull  
+   retries   3  
+   option redispatch  
+   maxconn   2000  
+   contimeout   5000  
+   clitimeout   50000  
+   srvtimeout   50000  
+   log        127.0.0.1       local0  
+   # use rsyslog rules to forword to a centralized server    
+   log        127.0.0.1       local7 debug  
+   # check webservers for health, taking them out of the queue as necessary   
+   option httpchk  
+
+backend web-backend
+   balance roundrobin
+   server web1 $IP:8081 check
+   server web2 $IP:8082 check
+   server web3 $IP:8083 check
+
+frontend http
+	bind *:8080
+	default_backend web-backend
+EOF
+}
+
+cmd-nginxconfig(){
+	cat <<EOF
+events {
+  worker_connections  4096;  ## Default: 1024
+}
+
+http {
+    upstream myapp1 {
+        server $IP:8081;
+        server $IP:8082;
+        server $IP:8083;
+    }
+
+    server {
+        listen 8080;
+
+        location / {
+            proxy_pass http://myapp1;
+        }
+    }
+}
+
+daemon off;
+EOF
 }
 
 main() {
@@ -67,7 +141,8 @@ main() {
   webserver)             shift; cmd-webserver $@;;
   webserver:run)         shift; cmd-webserverrun $@;;
   benchmark)             shift; cmd-benchmark $@;;
-  benchmarks)            shift; cmd-benchmarks $@;;
+	config:nginx)          shift; cmd-nginxconfig; $@;;
+  config:haproxy)        shift; cmd-haproxyconfig; $@;;
 	esac
 }
 

@@ -19,7 +19,31 @@ There are 3 types of connection to test:
 
 The script runs in docker and needs the docker socket mounted as a volume.
 
-#### `start`
+#### `config:nginx`
+
+To run the nginx test we must generate a config file:
+
+```
+$ docker run --rm \
+	-e IP=192.168.8.120 \
+	binocarlos/ambassadord-speedtest config:nginx > /tmp/nginx.conf
+```
+
+#### `config:haproxy`
+
+With haproxy we have to name the file `haproxy.cfg` and pass the folder that is in to `start`
+
+```
+$ docker run --rm \
+	-e IP=192.168.8.120 \
+	binocarlos/ambassadord-speedtest config:haproxy > /tmp/haproxy.cfg
+```
+
+#### `start <nginxconf> <haproxyconf>`
+
+Now we have `/tmp/nginx.conf` we pass it to `start`
+
+We pass the folder that `haproxy.cfg` is in:
 
 This starts a single consul and ambassadord - make sure hte IP variable is set to an accessible IP on your machine.
 
@@ -27,10 +51,10 @@ This starts a single consul and ambassadord - make sure hte IP variable is set t
 $ docker run -ti --rm \
 	-e IP=192.168.8.120 \
 	-v /var/run/docker.sock:/var/run/docker.sock \
-	binocarlos/ambassadord-speedtest start
+	binocarlos/ambassadord-speedtest start /tmp/nginx.conf /tmp
 ```
 
-#### `benchmark direct|dns|kv [AB_OPTS...]`
+#### `benchmark direct|dns|kv|nginx [AB_OPTS...]`
 
 Run apache bench against one of the backends.
 
@@ -41,6 +65,10 @@ $ docker run -ti --rm \
 	-e IP=192.168.8.120 \
 	-v /var/run/docker.sock:/var/run/docker.sock \
 	binocarlos/ambassadord-speedtest benchmark dns
+$ docker run -ti --rm \
+	-e IP=192.168.8.120 \
+	-v /var/run/docker.sock:/var/run/docker.sock \
+	binocarlos/ambassadord-speedtest benchmark nginx
 $ docker run -ti --rm \
 	-e IP=192.168.8.120 \
 	-v /var/run/docker.sock:/var/run/docker.sock \
@@ -71,6 +99,12 @@ direct:
 	Requests per second:    1412.08 [#/sec] (mean)
 	Time per request:       14.163 [ms] (mean)
 	Time per request:       0.708 [ms] (mean, across all concurrent requests)
+
+nginx:
+
+	Requests per second:    676.94 [#/sec] (mean)
+	Time per request:       29.545 [ms] (mean)
+	Time per request:       1.477 [ms] (mean, across all concurrent requests)
 
 kv:
 
