@@ -24,7 +24,10 @@ The script runs in docker and needs the docker socket mounted as a volume.
 This starts a single consul and ambassadord - make sure hte IP variable is set to an accessible IP on your machine.
 
 ```
-$ docker run -ti --rm -e IP=192.168.8.120 -v /var/run/docker.sock:/var/run/docker.sock binocarlos/ambassadord-speedtest start
+$ docker run -ti --rm \
+	-e IP=192.168.8.120 \
+	-v /var/run/docker.sock:/var/run/docker.sock \
+	binocarlos/ambassadord-speedtest start
 ```
 
 #### `benchmark direct|dns|kv [AB_OPTS...]`
@@ -34,9 +37,18 @@ Run apache bench against one of the backends.
 AB_OPTS defaults to `-n 200 -c 20`
 
 ```
-$ docker run -ti --rm -v /var/run/docker.sock:/var/run/docker.sock binocarlos/ambassadord-speedtest benchmark dns
-$ docker run -ti --rm -v /var/run/docker.sock:/var/run/docker.sock binocarlos/ambassadord-speedtest benchmark kv
-$ docker run -ti --rm -v /var/run/docker.sock:/var/run/docker.sock binocarlos/ambassadord-speedtest benchmark direct -n 1000 -c 100
+$ docker run -ti --rm \
+	-e IP=192.168.8.120 \
+	-v /var/run/docker.sock:/var/run/docker.sock \
+	binocarlos/ambassadord-speedtest benchmark dns
+$ docker run -ti --rm \
+	-e IP=192.168.8.120 \
+	-v /var/run/docker.sock:/var/run/docker.sock \
+	binocarlos/ambassadord-speedtest benchmark kv
+$ docker run -ti --rm \
+	-e IP=192.168.8.120 \
+	-v /var/run/docker.sock:/var/run/docker.sock \
+	binocarlos/ambassadord-speedtest benchmark direct -n 1000 -c 100
 ```
 
 #### `stop`
