@@ -47,6 +47,33 @@ Stop the containers and cleanup
 $ docker run --rm -v /var/run/docker.sock:/var/run/docker.sock binocarlos/ambassadord-speedtest stop
 ```
 
+## data
+
+The output from running the 3 benchmarks on a vagrant:
+
+```
+direct:
+
+	Requests per second:    1412.08 [#/sec] (mean)
+	Time per request:       14.163 [ms] (mean)
+	Time per request:       0.708 [ms] (mean, across all concurrent requests)
+
+kv:
+
+	Requests per second:    549.93 [#/sec] (mean)
+	Time per request:       36.368 [ms] (mean)
+	Time per request:       1.818 [ms] (mean, across all concurrent requests)
+
+dns:
+
+	Requests per second:    269.91 [#/sec] (mean)
+	Time per request:       74.098 [ms] (mean)
+	Time per request:       3.705 [ms] (mean, across all concurrent requests)
+```
+
+
+### Direct
+
 ## license
 
 MIT
