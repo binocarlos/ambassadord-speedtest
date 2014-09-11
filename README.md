@@ -96,27 +96,33 @@ This is running with ab settings of `-n 200 -c 20`
 ```
 direct:
 
-	Requests per second:    1412.08 [#/sec] (mean)
-	Time per request:       14.163 [ms] (mean)
-	Time per request:       0.708 [ms] (mean, across all concurrent requests)
+	Requests per second:    1345.86 [#/sec] (mean)
+	Time per request:       14.860 [ms] (mean)
+	Time per request:       0.743 [ms] (mean, across all concurrent requests)
+
+haproxy:
+
+	Requests per second:    811.37 [#/sec] (mean)
+	Time per request:       24.650 [ms] (mean)
+	Time per request:       1.232 [ms] (mean, across all concurrent requests)
 
 nginx:
 
-	Requests per second:    676.94 [#/sec] (mean)
-	Time per request:       29.545 [ms] (mean)
-	Time per request:       1.477 [ms] (mean, across all concurrent requests)
+	Requests per second:    754.53 [#/sec] (mean)
+	Time per request:       26.507 [ms] (mean)
+	Time per request:       1.325 [ms] (mean, across all concurrent requests)
 
 kv:
 
-	Requests per second:    549.93 [#/sec] (mean)
-	Time per request:       36.368 [ms] (mean)
-	Time per request:       1.818 [ms] (mean, across all concurrent requests)
+	Requests per second:    606.32 [#/sec] (mean)
+	Time per request:       32.986 [ms] (mean)
+	Time per request:       1.649 [ms] (mean, across all concurrent requests)
 
 dns:
 
-	Requests per second:    269.91 [#/sec] (mean)
-	Time per request:       74.098 [ms] (mean)
-	Time per request:       3.705 [ms] (mean, across all concurrent requests)
+	Requests per second:    263.57 [#/sec] (mean)
+	Time per request:       75.881 [ms] (mean)
+	Time per request:       3.794 [ms] (mean, across all concurrent requests)
 ```
 
 
