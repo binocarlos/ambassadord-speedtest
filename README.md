@@ -3,11 +3,17 @@ ambassadord-speedtest
 
 Run Apache Bench against [ambassadord](https://github.com/progrium/ambassadord) backends to compare latency.
 
+Also a useful test that ambassadord is doing its magic.
+
 The script runs 3 web servers that say 'hello world' and registers them as both consul services and in the key value store.
 
-You can then run Apache Bench via the ambassador hooked up to the webservers to see the effect it has on latency.
+You can then run Apache Bench via the ambassador hooked up in different ways to the webservers to see the effect it has on latency.
 
-Its also a useful test that ambassadord is doing its magic.
+There are 3 types of connection to test:
+
+ * direct - connect directly to a webserver
+ * dns - use the consul DNS lookup
+ * kv - use the consul Key Value store
 
 ## usage
 
@@ -15,27 +21,15 @@ The script runs in docker and needs the docker socket mounted as a volume.
 
 #### `start`
 
-This starts a single consul and ambassadord (passing a custom IP):
+This starts a single consul and ambassadord - make sure hte IP variable is set to an accessible IP on your machine.
 
 ```
 $ docker run -ti --rm -e IP=192.168.8.120 -v /var/run/docker.sock:/var/run/docker.sock binocarlos/ambassadord-speedtest start
 ```
 
-#### `benchmarks`
-
-Run a collection of benchmarks in sequence:
-
-```
-$ docker run -ti --rm -v /var/run/docker.sock:/var/run/docker.sock binocarlos/ambassadord-speedtest benchmarks
-```
-
 #### `benchmark direct|dns|kv [AB_OPTS...]`
 
-Run a single apache bench against one of 3 connections:
-
- * direct - connect directly to a webserver
- * dns - use the consul DNS lookup
- * kv - use the consul Key Value store
+Run apache bench against one of the backends.
 
 AB_OPTS defaults to `-n 200 -c 20`
 
