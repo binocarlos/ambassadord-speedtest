@@ -72,6 +72,10 @@ $ docker run -ti --rm \
 $ docker run -ti --rm \
 	-e IP=192.168.8.120 \
 	-v /var/run/docker.sock:/var/run/docker.sock \
+	binocarlos/ambassadord-speedtest benchmark haproxy	
+$ docker run -ti --rm \
+	-e IP=192.168.8.120 \
+	-v /var/run/docker.sock:/var/run/docker.sock \
 	binocarlos/ambassadord-speedtest benchmark kv
 $ docker run -ti --rm \
 	-e IP=192.168.8.120 \
