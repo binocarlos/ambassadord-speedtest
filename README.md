@@ -87,6 +87,40 @@ Stop the containers and cleanup
 $ docker run --rm -v /var/run/docker.sock:/var/run/docker.sock binocarlos/ambassadord-speedtest stop
 ```
 
+## weave
+
+This is for curiosity not to compare speeds because the setup is totally different.
+
+First - install it:
+
+```
+$ sudo wget -O /usr/local/bin/weave \
+  https://raw.githubusercontent.com/zettio/weave/master/weaver/weave
+$ sudo chmod a+x /usr/local/bin/weave
+```
+
+Now start it:
+
+```
+$ sudo weave launch 10.0.0.1/16
+```
+
+Then start a web-server:
+
+```
+$ WEBSERVER=$(sudo weave run 10.0.1.1/24 binocarlos/ambassadord-speedtest webserver:run)
+```
+
+Now we can run the benchmark:
+
+```
+$ BENCHMARK=$(sudo weave run 10.0.1.2/24 -ti --entrypoint="/bin/bash" binocarlos/ambassadord-speedtest)
+$ docker attach $BENCHMARK
+$ ab -n 200 -c 20 http://10.0.1.1:8080/
+$ exit
+$ docker rm $BENCHMARK
+```
+
 ## data
 
 The output from running the 3 benchmarks on a vagrant:
@@ -125,7 +159,7 @@ dns:
 	Time per request:       3.794 [ms] (mean, across all concurrent requests)
 ```
 
-
+Weave results (which is a totally)
 ### Direct
 
 ## license
