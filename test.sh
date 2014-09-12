@@ -32,6 +32,7 @@ cmd-start(){
 
 cmd-stop(){
 	docker stop nginx && docker rm nginx
+	docker stop haproxy && docker rm haproxy
 	docker stop backends && docker rm backends
 	docker stop consul && docker rm consul
 	docker stop web1 && docker rm web1
