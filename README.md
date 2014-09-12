@@ -54,7 +54,7 @@ $ docker run -ti --rm \
 	binocarlos/ambassadord-speedtest start /tmp/nginx.conf /tmp
 ```
 
-#### `benchmark direct|dns|kv|nginx [AB_OPTS...]`
+#### `benchmark direct|dns|kv|nginx|haproxy [AB_OPTS...]`
 
 Run apache bench against one of the backends.
 
