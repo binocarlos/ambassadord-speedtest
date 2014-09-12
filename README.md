@@ -159,7 +159,6 @@ dns:
 	Time per request:       3.794 [ms] (mean, across all concurrent requests)
 ```
 
-Weave results (which is a totally)
 ### Direct
 
 ## license
