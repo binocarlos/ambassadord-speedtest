@@ -16,18 +16,40 @@ cmd-webserver(){
 	curl -s -X PUT -d "$SPEEDTEST_IP:$port" http://$SPEEDTEST_IP:8500/v1/kv/web/$name
 }
 
+cmd-webservers(){
+  cmd-webserver web1 8081
+  cmd-webserver web2 8082
+  cmd-webserver web3 8083
+}
+
+cmd-consul(){
+  $(docker run --rm -e EXPECT=1 progrium/consul cmd:run $SPEEDTEST_IP -d)
+}
+
+cmd-ambassadord(){
+  docker run -d -v /var/run/docker.sock:/var/run/docker.sock --name backends progrium/ambassadord --omnimode
+  docker run --rm --privileged --net container:backends progrium/ambassadord --setup-iptables
+}
+
+cmd-nginx(){
+  local nginxconf="$1"; shift
+  docker run -d -p 8080 --name nginx -v $nginxconf:/etc/nginx.conf:ro nginx
+}
+
+cmd-haproxy(){
+  local haproxyconf="$1"; shift
+  docker run -d -p 8080 --name haproxy -v $haproxyconf:/haproxy-override dockerfile/haproxy
+}
+
 cmd-start(){
 	local nginxconf="$1"; shift
 	local haproxyconf="$1"; shift
-	$(docker run --rm -e EXPECT=1 progrium/consul cmd:run $SPEEDTEST_IP -d)
-	docker run -d -v /var/run/docker.sock:/var/run/docker.sock --name backends progrium/ambassadord --omnimode
-	docker run --rm --privileged --net container:backends progrium/ambassadord --setup-iptables
-	docker run -d -p 8080 --name nginx -v $nginxconf:/etc/nginx.conf:ro nginx
-	docker run -d -p 8080 --name haproxy -v $haproxyconf:/haproxy-override dockerfile/haproxy
+	cmd-consul
+	cmd-ambassadord
+	cmd-nginx $nginxconf
+	cmd-haproxy $haproxyconf
 	sleep 1
-	cmd-webserver web1 8081
-	cmd-webserver web2 8082
-	cmd-webserver web3 8083
+	cmd-webservers
 }
 
 cmd-stop(){
@@ -146,6 +168,11 @@ EOF
 main() {
 	case "$1" in
 	start)                 shift; cmd-start $@;;
+  consul)                shift; cmd-consul $@;;
+  ambassadord)           shift; cmd-ambassadord $@;;
+  nginx)                 shift; cmd-nginx $@;;
+  haproxy)               shift; cmd-haproxy $@;;
+  start)                 shift; cmd-start $@;;
   stop)                  shift; cmd-stop $@;;
   webserver)             shift; cmd-webserver $@;;
   webserver:run)         shift; cmd-webserverrun $@;;
