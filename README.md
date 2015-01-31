@@ -93,8 +93,6 @@ $ docker run --rm -v /var/run/docker.sock:/var/run/docker.sock binocarlos/ambass
 
 ## weave
 
-This is for curiosity not to compare speeds because the setup is totally different (overlay network, no load balancing).
-
 First - install it:
 
 ```
