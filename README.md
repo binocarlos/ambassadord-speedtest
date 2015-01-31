@@ -19,13 +19,21 @@ There are 3 types of connection to test:
 
 The script runs in docker and needs the docker socket mounted as a volume.
 
+#### set IP
+
+First export the IP address of the host you are running these tests on:
+
+```
+$ export SPEEDTEST_IP=192.168.8.120
+```
+
 #### `config:nginx`
 
 To run the nginx test we must generate a config file:
 
 ```
 $ docker run --rm \
-	-e IP=192.168.8.120 \
+	-e SPEEDTEST_IP \
 	binocarlos/ambassadord-speedtest config:nginx > /tmp/nginx.conf
 ```
 
@@ -35,7 +43,7 @@ With haproxy we have to name the file `haproxy.cfg` and pass the folder that is 
 
 ```
 $ docker run --rm \
-	-e IP=192.168.8.120 \
+	-e SPEEDTEST_IP \
 	binocarlos/ambassadord-speedtest config:haproxy > /tmp/haproxy.cfg
 ```
 
@@ -49,7 +57,7 @@ This starts a single consul and ambassadord - make sure the IP variable is set t
 
 ```
 $ docker run -ti --rm \
-	-e IP=192.168.8.120 \
+	-e SPEEDTEST_IP \
 	-v /var/run/docker.sock:/var/run/docker.sock \
 	binocarlos/ambassadord-speedtest start /tmp/nginx.conf /tmp
 ```
@@ -62,23 +70,23 @@ AB_OPTS defaults to `-n 200 -c 20`
 
 ```
 $ docker run -ti --rm \
-	-e IP=192.168.8.120 \
+	-e SPEEDTEST_IP \
 	-v /var/run/docker.sock:/var/run/docker.sock \
 	binocarlos/ambassadord-speedtest benchmark dns
 $ docker run -ti --rm \
-	-e IP=192.168.8.120 \
+	-e SPEEDTEST_IP \
 	-v /var/run/docker.sock:/var/run/docker.sock \
 	binocarlos/ambassadord-speedtest benchmark nginx
 $ docker run -ti --rm \
-	-e IP=192.168.8.120 \
+	-e SPEEDTEST_IP \
 	-v /var/run/docker.sock:/var/run/docker.sock \
 	binocarlos/ambassadord-speedtest benchmark haproxy	
 $ docker run -ti --rm \
-	-e IP=192.168.8.120 \
+	-e SPEEDTEST_IP \
 	-v /var/run/docker.sock:/var/run/docker.sock \
 	binocarlos/ambassadord-speedtest benchmark kv
 $ docker run -ti --rm \
-	-e IP=192.168.8.120 \
+	-e SPEEDTEST_IP \
 	-v /var/run/docker.sock:/var/run/docker.sock \
 	binocarlos/ambassadord-speedtest benchmark direct -n 1000 -c 100
 ```
@@ -88,7 +96,9 @@ $ docker run -ti --rm \
 Stop the containers and cleanup
 
 ```
-$ docker run --rm -v /var/run/docker.sock:/var/run/docker.sock binocarlos/ambassadord-speedtest stop
+$ docker run --rm \
+	-v /var/run/docker.sock:/var/run/docker.sock \
+	binocarlos/ambassadord-speedtest stop
 ```
 
 ## weave

@@ -1,5 +1,5 @@
 #!/bin/bash
-export IP=${IP:-192.168.8.120}
+export SPEEDTEST_IP=${SPEEDTEST_IP:-192.168.8.120}
 
 cmd-webserverrun(){
 	/bin/webserver
@@ -9,17 +9,17 @@ cmd-webserver(){
 	local name="$1"; shift
 	local port="$1"; shift
 	# run the webserver container
-	docker run -d --name $name -p $IP:$port:8080 binocarlos/ambassadord-speedtest webserver:run
+	docker run -d --name $name -p $SPEEDTEST_IP:$port:8080 binocarlos/ambassadord-speedtest webserver:run
 	# register it with consul service
-	curl -s -X PUT -H "Content-Type: application/json" -d '{"ID":"'"$name"'","Name":"web","Tags":[],"Port":'"$port"'}' http://$IP:8500/v1/agent/service/register
+	curl -s -X PUT -H "Content-Type: application/json" -d '{"ID":"'"$name"'","Name":"web","Tags":[],"Port":'"$port"'}' http://$SPEEDTEST_IP:8500/v1/agent/service/register
 	# register it with consul kv
-	curl -s -X PUT -d "$IP:$port" http://$IP:8500/v1/kv/web/$name
+	curl -s -X PUT -d "$SPEEDTEST_IP:$port" http://$SPEEDTEST_IP:8500/v1/kv/web/$name
 }
 
 cmd-start(){
 	local nginxconf="$1"; shift
 	local haproxyconf="$1"; shift
-	$(docker run --rm -e EXPECT=1 progrium/consul cmd:run $IP -d)
+	$(docker run --rm -e EXPECT=1 progrium/consul cmd:run $SPEEDTEST_IP -d)
 	docker run -d -v /var/run/docker.sock:/var/run/docker.sock --name backends progrium/ambassadord --omnimode
 	docker run --rm --privileged --net container:backends progrium/ambassadord --setup-iptables
 	docker run -d -p 8080 --name nginx -v $nginxconf:/etc/nginx.conf:ro nginx
@@ -53,9 +53,9 @@ cmd-benchmark() {
 	fi
 
 	if [[ "$mode" == "kv" ]]; then
-		backend="consul://$IP:8500/web"
+		backend="consul://$SPEEDTEST_IP:8500/web"
 	elif [[ "$mode" == "direct" ]]; then
-		address="http://$IP:8081/"
+		address="http://$SPEEDTEST_IP:8081/"
 	elif [[ "$mode" == "nginx" ]]; then
 		link="nginx:backends"
 	elif [[ "$mode" == "haproxy" ]]; then
@@ -99,9 +99,9 @@ defaults
 
 backend web-backend
    balance roundrobin
-   server web1 $IP:8081 check
-   server web2 $IP:8082 check
-   server web3 $IP:8083 check
+   server web1 $SPEEDTEST_IP:8081 check
+   server web2 $SPEEDTEST_IP:8082 check
+   server web3 $SPEEDTEST_IP:8083 check
 
 frontend http
 	bind *:8080
@@ -117,9 +117,9 @@ events {
 
 http {
     upstream myapp1 {
-        server $IP:8081;
-        server $IP:8082;
-        server $IP:8083;
+        server $SPEEDTEST_IP:8081;
+        server $SPEEDTEST_IP:8082;
+        server $SPEEDTEST_IP:8083;
     }
 
     server {
