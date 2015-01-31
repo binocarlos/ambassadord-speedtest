@@ -45,7 +45,7 @@ Now we have `/tmp/nginx.conf` we pass it to `start`
 
 We pass the folder that `haproxy.cfg` is in:
 
-This starts a single consul and ambassadord - make sure hte IP variable is set to an accessible IP on your machine.
+This starts a single consul and ambassadord - make sure the IP variable is set to an accessible IP on your machine.
 
 ```
 $ docker run -ti --rm \
