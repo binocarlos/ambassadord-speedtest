@@ -163,8 +163,6 @@ dns:
 	Time per request:       3.794 [ms] (mean, across all concurrent requests)
 ```
 
-### Direct
-
 ## license
 
 MIT
