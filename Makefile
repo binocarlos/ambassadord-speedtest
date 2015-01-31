@@ -3,7 +3,7 @@ build:
 	docker build -t binocarlos/ambassadord-speedtest .
 
 image:
-	docker build -t binocarlos/ambassador-speedtest .
+	docker build -t binocarlos/ambassadord-speedtest .
 
 dev:
 	docker run -ti --rm \

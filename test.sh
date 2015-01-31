@@ -1,6 +1,22 @@
 #!/bin/bash
 export SPEEDTEST_IP=${SPEEDTEST_IP:-192.168.8.120}
 
+cmd-all(){
+  cmd-nginxconfig > /tmp/nginx.conf
+  cmd-haproxyconfig > /tmp/haproxy.cfg
+  cmd-start /tmp/nginx.conf /tmp
+  sleep 5
+  cmd-benchmark nginx
+  sleep 2
+  cmd-benchmark haproxy
+  sleep 2
+  cmd-benchmark kv
+  sleep 2
+  cmd-benchmark dns
+  sleep 2
+  cmd-stop
+}
+
 cmd-webserverrun(){
 	/bin/webserver
 }
@@ -27,18 +43,26 @@ cmd-consul(){
 }
 
 cmd-ambassadord(){
-  docker run -d -v /var/run/docker.sock:/var/run/docker.sock --name backends progrium/ambassadord --omnimode
+  docker run -d -v /var/run/docker.sock:/var/run/docker.sock --dns 172.17.42.1 --name backends progrium/ambassadord --omnimode
   docker run --rm --privileged --net container:backends progrium/ambassadord --setup-iptables
 }
 
 cmd-nginx(){
   local nginxconf="$1"; shift
-  docker run -d -p 8080 --name nginx -v $nginxconf:/etc/nginx.conf:ro nginx
+  if [[ -z $nginxconf ]]; then
+    echo "no config given";
+    exit 1;
+  fi
+  docker run -d --name nginx -v $nginxconf:/etc/nginx.conf:ro nginx
 }
 
 cmd-haproxy(){
   local haproxyconf="$1"; shift
-  docker run -d -p 8080 --name haproxy -v $haproxyconf:/haproxy-override dockerfile/haproxy
+  if [[ -z $haproxyconf ]]; then
+    echo "no config given";
+    exit 1;
+  fi
+  docker run -d --name haproxy -v $haproxyconf:/haproxy-override dockerfile/haproxy
 }
 
 cmd-start(){
@@ -76,12 +100,12 @@ cmd-benchmark() {
 
 	if [[ "$mode" == "kv" ]]; then
 		backend="consul://$SPEEDTEST_IP:8500/web"
-	elif [[ "$mode" == "direct" ]]; then
-		address="http://$SPEEDTEST_IP:8081/"
 	elif [[ "$mode" == "nginx" ]]; then
 		link="nginx:backends"
+    address="http://backends:80/"
 	elif [[ "$mode" == "haproxy" ]]; then
 		link="haproxy:backends"
+    address="http://backends:80/"
 	fi
 
 	echo
@@ -91,7 +115,7 @@ cmd-benchmark() {
 	echo
 	echo "--------------------------------------"
 	echo
-	docker run -ti --rm --link $link -e "BACKEND_8080=$backend" --entrypoint="/usr/bin/ab" binocarlos/ambassadord-speedtest $abargs $address
+	docker run -ti --rm --dns 172.17.42.1 --link $link -e "BACKEND_8080=$backend" --entrypoint="/usr/bin/ab" binocarlos/ambassadord-speedtest $abargs $address
 }
 
 cmd-haproxyconfig(){
@@ -126,7 +150,7 @@ backend web-backend
    server web3 $SPEEDTEST_IP:8083 check
 
 frontend http
-	bind *:8080
+	bind *:80
 	default_backend web-backend
 EOF
 }
@@ -145,7 +169,7 @@ http {
     }
 
     server {
-        listen 8080;
+        listen 80;
 
         location / {
             proxy_pass http://myapp1;
@@ -167,6 +191,7 @@ EOF
 
 main() {
 	case "$1" in
+  all)                   shift; cmd-all $@;;
 	start)                 shift; cmd-start $@;;
   consul)                shift; cmd-consul $@;;
   ambassadord)           shift; cmd-ambassadord $@;;
@@ -175,6 +200,7 @@ main() {
   start)                 shift; cmd-start $@;;
   stop)                  shift; cmd-stop $@;;
   webserver)             shift; cmd-webserver $@;;
+  webservers)            shift; cmd-webservers $@;;
   webserver:run)         shift; cmd-webserverrun $@;;
   benchmark)             shift; cmd-benchmark $@;;
 	config:nginx)          shift; cmd-nginxconfig; $@;;
