@@ -135,6 +135,14 @@ daemon off;
 EOF
 }
 
+usage() {
+cat <<EOF
+Usage:
+tbc
+EOF
+  exit 1
+}
+
 main() {
 	case "$1" in
 	start)                 shift; cmd-start $@;;
@@ -144,6 +152,7 @@ main() {
   benchmark)             shift; cmd-benchmark $@;;
 	config:nginx)          shift; cmd-nginxconfig; $@;;
   config:haproxy)        shift; cmd-haproxyconfig; $@;;
+  *)                     usage;
 	esac
 }
 

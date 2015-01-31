@@ -59,6 +59,7 @@ This starts a single consul and ambassadord - make sure the IP variable is set t
 $ docker run -ti --rm \
 	-e SPEEDTEST_IP \
 	-v /var/run/docker.sock:/var/run/docker.sock \
+	-v /usr/bin/docker \:/usr/bin/docker \
 	binocarlos/ambassadord-speedtest start /tmp/nginx.conf /tmp
 ```
 
